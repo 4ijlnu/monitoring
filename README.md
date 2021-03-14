@@ -63,3 +63,7 @@ Icinga check for Sophos UTM
 
 ### Tested on
 - SG230
+
+
+[check_nas]: #check_nas
+[check_sophos]: #check_sophos
