@@ -3,6 +3,7 @@
 ## Table of Contents
 1. [check_nas][check_nas]
 2. [check_sophos][check_sophos]
+3. [check_switch][check_switch]
 
 ## check_nas
 Icinga check for different NAS (currently: Synology, QNAP)
@@ -64,6 +65,36 @@ Icinga check for Sophos UTM
 ### Tested on
 - SG230
 
+## check_switch
+Icinga check for different switches (currently: HP)
+
+### Usage
+`check_switch.php [options]`
+
+### Options
+```
+-m  Mode (Currently available: cpu, memory, interfaces, temp)
+-v  SNMP-Version (Currently supported: 1, 2c)
+-s  SNMP-Community
+-h  Host
+-w  Warnlimit
+-c  Critlimit
+```
+
+### Currently supported type-mode-combos:
+#### synology
+```
+hp temp
+hp cpu
+hp memory
+hp interfaces
+```
+
+### Tested on
+- HP V1910-48G
+- HP V1910-24G
+
 
 [check_nas]: #check_nas
 [check_sophos]: #check_sophos
+[check_switch]: #check_switch
