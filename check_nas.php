@@ -423,6 +423,15 @@
         }
       }
 
+      // set exit code
+      if($critcount > 0) {
+        exitCode("CRITICAL");
+      } else if($warncount > 0) {
+        exitCode("WARNING");
+      } else {
+        exitCode("OK");
+      }
+
     } else {
       echo "Volume check not implemented for ".$options["t"]."\n";
       exitCode("UNKNOWN");
