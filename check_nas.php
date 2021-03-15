@@ -382,8 +382,8 @@
 
     if(isset($oids[$type]["volumes"])) {
       // prepare crit and warn counters
-      $critstate = 0;
-      $warnstate = 0;
+      $critcount = 0;
+      $warncount = 0;
 
       if(isset($oids[$type]["volumes"]["index"])) {
         switch($type) {
@@ -413,14 +413,23 @@
 
           // check space usage
           if($percentageused >= $crit) {
-            $critstate++;
+            $critcount++;
           } else if($percentageused >= $warn) {
-            $warnstate++;
+            $warncount++;
           }
 
           echo "Volume ".$i."; ".$vol["desc"]."; ".$fs."Status: ".$vol["status"]."; Storage: ".round($percentageused,0)."% used (".round(($vol["free"]/1024/1024/1024), 0)."GB free)|storage vol".$i."=".$percentageused.";".$warn.";".$crit.";0;100\n";
           $i++;
         }
+      }
+
+      // set exit code
+      if($critcount > 0) {
+        exitCode("CRITICAL");
+      } else if($warncount > 0) {
+        exitCode("WARNING");
+      } else {
+        exitCode("OK");
       }
 
     } else {
