@@ -125,64 +125,44 @@
     $community = $options["s"];
     $version = $options["v"];
 
-    // prepare snmp query
-    $cmd = "snmpget -v".$version." -c ".$community." ".$host." ".$oid;
+    // prepare and execute snmp query and
+    // remove leading and trailing whitespaces, quotation marks, line feeds etc.
+    // option "-O vq" returns only value (and unit)
+    $cmd = "snmpget -v".$version." -c ".$community." -O vq ".$host." ".$oid;
+    $result = trim(shell_exec($cmd), " \n\r\t\v\0\"");
 
-    // process snmp query and get value from result
-    $res = shell_exec($cmd);
-    $tmp = explode(" = ", $res);
-    $value = $tmp[1];
-
-    // process value; remove surrounding whitespaces, quotation marks...
-    if($value != "No Such Instance currently exists at this OID") {
-      // snmp query has a result to process
-
-      // remove leading data type and leading and trailing whitespaces
-      $tmp = explode(": ", $value, 2);
-      $value = $tmp[1];
-      $value = trim($value);
-
-      // remove leading quotation marks
-      if(substr($value, 0, 1) == '"') {
-        $value = substr($value, 1);
-      }
-
-      // remove trailing quotation marks
-      if(substr($value, -1) == '"') {
-        $value = substr($value, 0, -1);
-      }
-
-      // remove leftover leading/trailing whitespaces again
-      $value = trim($value);
-
-      return $value;
-    } else {
-      // snmp query has no processable result (probably wrong oid)
-    }
+    // and return query result
+    return $result;
   }
 
   function sizeToBytes($size) {
-    $exp = explode(" ", $size);
-    $value = $exp[0];
-    $unit = $exp[1];
-    switch($unit) {
-      case "KB":
-        $factor = 1024;
-        break;
-      case "MB":
-        $factor = 1024*1024;
-        break;
-      case "GB":
-        $factor = 1024*1024*1024;
-        break;
-      case "TB":
-        $factor = 1024*1024*1024*1024;
-        break;
-      default:
-        $factor = 1;
-        break;
+
+    if(substr($size, -1) == "B" || substr($size, -1) == "b") {
+      $exp = explode(" ", $size);
+      $value = $exp[0];
+      $unit = $exp[1];
+
+      switch($unit) {
+        case "KB":
+          $factor = 1024;
+          break;
+        case "MB":
+          $factor = 1024*1024;
+          break;
+        case "GB":
+          $factor = 1024*1024*1024;
+          break;
+        case "TB":
+          $factor = 1024*1024*1024*1024;
+          break;
+        default:
+          $factor = 1;
+          break;
+      }
+      return $value*$factor;
+    } else {
+      return $size;
     }
-    return $value*$factor;
   }
 
   function checkCpu() {
@@ -286,7 +266,7 @@
       }
 
       // iterate through disks
-      while(snmp($oids[$type]["disks"]["index"].$i) != "") {
+      while(snmp($oids[$type]["disks"]["index"].$i) != "No Such Instance currently exists at this OID") {
         $disk["index"] = snmp($oids[$type]["disks"]["index"].$i);
         $disk["desc"] = snmp($oids[$type]["disks"]["desc"].$i);
         $disk["temp"] = snmp($oids[$type]["disks"]["temp"].$i);
@@ -405,9 +385,6 @@
       $critstate = 0;
       $warnstate = 0;
 
-      //get number of volumes
-      // $volcount = snmp($oids[$type]["volumes"]["count"]);
-
       if(isset($oids[$type]["volumes"]["index"])) {
         switch($type) {
           case "qnap":
@@ -417,7 +394,7 @@
             $i = 0;
             break;
         }
-        while(snmp($oids[$type]["volumes"]["index"].$i) != "") {
+        while(snmp($oids[$type]["volumes"]["index"].$i) != "No Such Instance currently exists at this OID") {
           $vol["index"] = snmp($oids[$type]["volumes"]["index"].$i);
           $vol["desc"] = snmp($oids[$type]["volumes"]["desc"].$i);
           if(isset($oids[$type]["volumes"]["filesystem"])) {
