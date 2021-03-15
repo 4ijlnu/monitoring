@@ -394,7 +394,7 @@
             $i = 0;
             break;
         }
-        while(snmp($oids[$type]["volumes"]["index"].$i) != "No Such Instance currently exists at this OID") {
+        while(snmp($oids[$type]["volumes"]["index"].$i) != "No Such Instance currently exists at this OID" && snmp($oids[$type]["volumes"]["desc"].$i) != null ) {
           $vol["index"] = snmp($oids[$type]["volumes"]["index"].$i);
           $vol["desc"] = snmp($oids[$type]["volumes"]["desc"].$i);
           if(isset($oids[$type]["volumes"]["filesystem"])) {
