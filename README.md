@@ -82,7 +82,7 @@ Icinga check for different switches (currently: HP)
 ```
 
 ### Currently supported type-mode-combos:
-#### synology
+#### hp
 ```
 hp temp
 hp cpu
