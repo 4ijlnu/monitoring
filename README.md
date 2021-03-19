@@ -94,6 +94,33 @@ hp interfaces
 - HP V1910-48G
 - HP V1910-24G
 
+## check_printer
+Icinga check for different printers (currently: Kyocera)
+
+### Usage
+`check_printer.php [options]`
+
+### Options
+```
+-t  Type (Currently supported: kyocera)
+-m  Mode (Currently available: pages, supplies, inputs)
+-v  SNMP-Version (Currently supported: 1, 2c)
+-s  SNMP-Community
+-h  Host
+-w  Warnlimit
+-c  Critlimit
+```
+
+### Currently supported type-mode-combos
+#### kyocera
+```
+kyocera pages
+kyocera supplies
+kyocera inputs
+```
+
+### Tested on
+- Kyocera FS-4100DN
 
 [check_nas]: #check_nas
 [check_sophos]: #check_sophos
