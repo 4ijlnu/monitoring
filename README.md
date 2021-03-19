@@ -4,6 +4,7 @@
 1. [check_nas][check_nas]
 2. [check_sophos][check_sophos]
 3. [check_switch][check_switch]
+4. [check_printer][check_printer]
 
 ## check_nas
 Icinga check for different NAS (currently: Synology, QNAP)
@@ -125,3 +126,4 @@ kyocera inputs
 [check_nas]: #check_nas
 [check_sophos]: #check_sophos
 [check_switch]: #check_switch
+[check_printer]: #check_printer
