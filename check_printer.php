@@ -6,6 +6,9 @@
 
   $options = getopt("t:m:s:h:w:c:v:");
 
+  // make type/vendor all lowercase
+  $options["t"] = strtolower($options["t"]);
+
   $oids = array(
     "kyocera" => array(
       "system" => array(
