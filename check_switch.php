@@ -68,8 +68,11 @@
         exitCode("CRITICAL");
       } else if($usage >= $warn) {
         exitCode("WARNING");
-      } else {
+      } else if($usage >= 0){
         exitCode("OK");
+      } else {
+        echo "Invalid usage value\n";
+        exitCode("UNKNOWN");
       }
 
     } else {
@@ -114,7 +117,7 @@
         } else {
           exitCode("UNKNOWN");
         }
-        
+
       } else {
         echo "Invalid temperatur value: ".$temp."\n";
         exitCode("UNKNOWN");
