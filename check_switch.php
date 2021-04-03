@@ -1,6 +1,12 @@
 #!/usr/bin/php
 <?php
-  $options = getopt("t:m:s:h:w:c:v:");
+  $options = getopt(
+    "t:m:s:h:w:c:v:",
+    array(
+      "mintemp:",
+      "maxtemp:",
+    )
+  );
 
   // make type/vendor all lowercase
   $options["t"] = strtolower($options["t"]);
@@ -76,24 +82,42 @@
     // set up variables
     global $options;
     global $oids;
-    $warn = $options["w"];
-    $crit = $options["c"];
+    $warn = 0.01*$options["w"];
+    $crit = 0.01*$options["c"];
     $type = $options["t"];
+    $min = $options["mintemp"];
+    $max = $options["maxtemp"];
 
     if(isset($oids[$type])) {
       //get temp data
       $temp = snmp($oids[$type]["system"]["temp"]);
 
-      // output info
-      echo $temp." C system temperature|temp=".$temp.";".$warn.";".$crit."\n";
+      // check temp data
+      if(is_numeric($temp)) {
+        // set thresholds
+        $range = $max - $min;
+        $crithigh = $min + ($range * $crit);
+        $critlow = $max - ($range * $crit);
+        $warnhigh = $min + ($range * $warn);
+        $warnlow = $max - ($range * $warn);
 
-      // set exit code
-      if($temp >= $crit) {
-        exitCode("CRITICAL");
-      } else if($temp >= $warn) {
-        exitCode("WARNING");
+        // output info
+        echo $temp." C system temperature|temp=".$temp.";".$warnhigh.";".$crithigh.";".$min.";".$max."\n";
+
+        // set exit code
+        if($temp >= $crithigh || $temp <= $critlow) {
+          exitCode("CRITICAL");
+        } else if($temp >= $warnhigh || $temp <= $warnlow) {
+          exitCode("WARNING");
+        } else if($temp > $warnlow && $temp < $warnhigh){
+          exitCode("OK");
+        } else {
+          exitCode("UNKNOWN");
+        }
+        
       } else {
-        exitCode("OK");
+        echo "Invalid temperatur value: ".$temp."\n";
+        exitCode("UNKNOWN");
       }
     } else {
       echo "Temperature check not implemented for ".$type."\n";

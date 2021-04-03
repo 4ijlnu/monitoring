@@ -80,7 +80,12 @@ Icinga check for different switches (currently: HP)
 -h  Host
 -w  Warnlimit
 -c  Critlimit
+
+--mintemp   Minimum operating temperature
+--maxtemp   Maximum operating temperature
 ```
+
+Note: warnlimit and critlimit are given as percentage of the operating temperature range. Example: mintemp=5°C, maxtemp=15°C, critlimit=95 -> CRITICAL above 14.5°C and below 5.5°C.
 
 ### Currently supported type-mode-combos:
 #### hp
