@@ -60,18 +60,23 @@
       // get usage data
       $usage = snmp($oids[$type]["memory"]["usage"]);
 
-      // output info
-      echo $usage."% used|memory=".$usage.";".$warn.";".$crit.";0;100\n";
+      if(is_numeric($usage)) {
+        // output info
+        echo $usage."% used|memory=".$usage.";".$warn.";".$crit.";0;100\n";
 
-      // set exit code
-      if($usage >= $crit) {
-        exitCode("CRITICAL");
-      } else if($usage >= $warn) {
-        exitCode("WARNING");
-      } else if($usage >= 0){
-        exitCode("OK");
+        // set exit code
+        if($usage >= $crit) {
+          exitCode("CRITICAL");
+        } else if($usage >= $warn) {
+          exitCode("WARNING");
+        } else if($usage >= 0){
+          exitCode("OK");
+        } else {
+          echo "Invalid usage value\n";
+          exitCode("UNKNOWN");
+        }
       } else {
-        echo "Invalid usage value\n";
+        echo "Invalid memory usage: ".$usage."\n";
         exitCode("UNKNOWN");
       }
 
@@ -140,16 +145,21 @@
       // get cpu data
       $usage = snmp($oids[$type]["cpu"]["usage"]);
 
-      // output info
-      echo $usage."% used|cpu=".$usage.";".$warn.";".$crit.";0;100\n";
+      if(is_numeric($usage)) {
+        // output info
+        echo $usage."% used|cpu=".$usage.";".$warn.";".$crit.";0;100\n";
 
-      // set exit code
-      if($usage >= $crit) {
-        exitCode("CRITICAL");
-      } else if($usage >= $warn) {
-        exitCode("WARNING");
+        // set exit code
+        if($usage >= $crit) {
+          exitCode("CRITICAL");
+        } else if($usage >= $warn) {
+          exitCode("WARNING");
+        } else {
+          exitCode("OK");
+        }
       } else {
-        exitCode("OK");
+        echo "Invalid cpu usage: ".$usage."\n";
+        exitCode("UNKNOWN");
       }
 
     } else {
