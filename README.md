@@ -99,6 +99,7 @@ hp interfaces
 ### Tested on
 - HP V1910-48G
 - HP V1910-24G
+- HP 1810G-24 (only interfaces)
 
 ## check_printer
 Icinga check for different printers (currently: Kyocera)
