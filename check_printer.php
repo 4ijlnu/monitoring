@@ -121,14 +121,17 @@
 
     // set exit code
     if($pages["total"] >= $crit) {
+      // more pages than $crit processed
       exitCode("CRITICAL");
     } else if($pages["total"] >= $warn) {
+      // less pages than $crit but more than $warn processed
       exitCode("WARNING");
-    } else if($pages["total"] == "No Such Instance currently exists at this OID") {
-      echo "pups";
-      exitCode("UNKNOWN");
-    } else {
+    } else if(($pages < $warn) && ($pages >= 0) && (is_numeric($pages))){
+      // less pages than $warn but no negative amounts processed an $pages is a number
       exitCode("OK");
+    } else {
+      // negative amount of pages processed or $pages is not numeric
+      exitCode("UNKNOWN");
     }
   }
 
@@ -143,6 +146,7 @@
     $type = $options["t"];
     $critcount = 0;
     $warncount = 0;
+    $okcount = 0;
 
     // iterate through inputs
     $i = 1;
@@ -169,10 +173,16 @@
       echo $intype.": ".$pctlevel."% full (".$input["level"]." of ".$input["capacity"]."); status: ".$statustext."\n";
 
       // set counters
+      // note: sheetFeedManual is empty almost all of the time on almost every device so ignore that here
       if(($pctlevel <= $crit) && ($intype != "sheetFeedManual")) {
+        // less than $crit percent of input medium left
         $critcount++;
       } else if(($pctlevel <= $warn) && ($intype != "sheetFeedManual")) {
+        // more than $crit but less than $warn percent of input medium left
         $warncount++;
+      } else if(($pctlevel > $warn) && ($pctlevel <= 100)) {
+        // more than $warn percent of input medium left (but not more thann 100%)
+        $okcount++;
       }
 
       $i++;
@@ -180,11 +190,17 @@
 
     // set exit code
     if($critcount > 0) {
+      // at least one input critical
       exitCode("CRITICAL");
     } else if($warncount > 0) {
+      // no input critical but at least one had a warning
       exitCode("WARNING");
-    } else {
+    } else if($okcount == $i){
+      // every input ok
       exitCode("OK");
+    } else {
+      // no criticals, no warnings but also not everything ok
+      exitCode("UNKNOWN");
     }
   }
 
@@ -198,6 +214,7 @@
     $type = $options["t"];
     $critcount = 0;
     $warncount = 0;
+    $okcount = 0;
 
     // iterate through supplies
     $i = 1;
@@ -208,7 +225,7 @@
       $supply["capacity"] = snmp($oids[$type]["supply"]["capacity"].$i);
       $supply["level"] = snmp($oids[$type]["supply"]["level"].$i);
 
-      // calculate supply usage
+      // calculate the percentage of supply left
       $pctlevel = ($supply["level"]/$supply["capacity"])*100;
 
       // output info
@@ -216,9 +233,14 @@
 
       // set counters
       if($pctlevel <= $crit) {
+        // less than $critical percent of this supply left
         $critcount++;
       } else if($pctlevel <= $warn) {
+        // more than $critical but less than $warning percent of this supply left
         $warncount++;
+      } else if(($pctlevel > $warn) && ($pctlevel <= 100)) {
+        // more than $warning percent of this supply left (but not more than 100%)
+        $okcount++;
       }
 
       $i++;
@@ -226,11 +248,17 @@
 
     // set exit code
     if($critcount > 0) {
+      // at least one supply was critical
       exitCode("CRITICAL");
     } else if($warncount > 0) {
+      // no supply was critical but at least one had a warning
       exitCode("WARNING");
-    } else {
+    } else if($okcount == $i){
+      // every supply was ok
       exitCode("OK");
+    } else {
+      // no critical, no warning but also not everything ok
+      exitCode("UNKNOWN");
     }
   }
 
