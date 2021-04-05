@@ -116,6 +116,8 @@ Icinga check for different printers (currently: Kyocera)
 -h  Host
 -w  Warnlimit
 -c  Critlimit
+
+--ignoreSheetFeedManual   Manual sheet feeds are empty on a lot of devices on a regular base; set this true to ignore empty or low-on-input sheetFeedManual's in the inputs-check and treat them as ok instead
 ```
 
 ### Currently supported type-mode-combos

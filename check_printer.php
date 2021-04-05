@@ -4,7 +4,12 @@
   // input types from https://tools.ietf.org/html/rfc1759#page-35
 
 
-  $options = getopt("t:m:s:h:w:c:v:");
+  $options = getopt(
+    "t:m:s:h:w:c:v:",
+    array(
+      "ignoreSheetFeedManual"
+    )
+  );
 
   // make type/vendor all lowercase
   $options["t"] = strtolower($options["t"]);
@@ -172,16 +177,26 @@
       // output info
       echo $intype.": ".$pctlevel."% full (".$input["level"]." of ".$input["capacity"]."); status: ".$statustext."\n";
 
+      // sheetFeedManual is empty almost all of the time on almost every device
+      // so --ignoreSheetFeedManual is an option to ignore that in the returned status
+
       // set counters
-      // note: sheetFeedManual is empty almost all of the time on almost every device so ignore that here
       if(($pctlevel <= $crit) && ($intype != "sheetFeedManual")) {
         // less than $crit percent of input medium left
-        $critcount++;
+        if(($intype == "sheetFeedManual") && ($options["ignoreSheetFeedManual"])) {
+          $okcount++;
+        } else {
+          $critcount++;
+        }
       } else if(($pctlevel <= $warn) && ($intype != "sheetFeedManual")) {
         // more than $crit but less than $warn percent of input medium left
-        $warncount++;
+        if(($intype == "sheetFeedManual") && ($options["ignoreSheetFeedManual"])) {
+          $okcount++;
+        } else {
+          $critcount++;
+        }
       } else if(($pctlevel > $warn) && ($pctlevel <= 100)) {
-        // more than $warn percent of input medium left (but not more thann 100%)
+        // more than $warn percent of input medium left (but not more than 100%)
         $okcount++;
       }
 
