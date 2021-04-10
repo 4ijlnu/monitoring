@@ -5,6 +5,7 @@
 2. [check_sophos][check_sophos]
 3. [check_switch][check_switch]
 4. [check_printer][check_printer]
+5. [check_ups][check_ups]
 
 ## check_nas
 Icinga check for different NAS (currently: Synology, QNAP)
@@ -131,7 +132,41 @@ kyocera inputs
 ### Tested on
 - Kyocera FS-4100DN
 
+## check_ups
+Icinga check for uninterruptible power supplies (currently: Schneider Electric APC)
+
+### Usage
+`check_ups.php [options]`
+
+### Options
+```
+-t  Type (Currently supported: apc)
+-m  Mode (Currently available: battery, input, output)
+-v  SNMP-Version (Currently supported: 1, 2c)
+-s  SNMP-Community
+-h  Host
+-w  Warnlimit
+-c  Critlimit
+
+--minvoltage    Minimum safe voltage on input line (only for mode "input")
+--maxvoltage    Maximum safe voltage on input line (only for mode "input")
+```
+
+### Currently supported type-mode-combos
+#### apc
+```
+apc battery
+apc input
+apc output
+```
+
+### Tested on
+- Schneider Electric APC Smart-UPS 3000
+- Schneider Electric APC Smart-UPS 750
+
+
 [check_nas]: #check_nas
 [check_sophos]: #check_sophos
 [check_switch]: #check_switch
 [check_printer]: #check_printer
+[check_ups]: #check_ups
