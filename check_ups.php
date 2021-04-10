@@ -1,6 +1,12 @@
 #!/usr/bin/php
 <?php
-  $options = getopt("t:m:s:h:w:c:v:");
+  $options = getopt(
+    "t:m:s:h:w:c:v:",
+    array(
+      "minvoltage:",
+      "maxvoltage:"
+    )
+  );
 
   // make type/vendor all lowercase
   $options["t"] = strtolower($options["t"]);
@@ -229,11 +235,59 @@
   }
 
   function checkInput() {
+    //set up variables
+    global $options;
+    global $oids;
+    global $inputLineFailCauses;
+    $warn = 0.01*$options["w"];
+    $crit = 0.01*$options["c"];
+    $type = $options["t"];
 
+    // get input data
+    $input["lineVoltage"] = snmp($oids[$type]["input"]["lineVoltage"]);
+    $input["lineFailCause"] = $inputLineFailCauses[snmp($oids[$type]["input"]["lineFailCause"])];
+
+    // output info
+    echo "Voltage: ".$input["lineVoltage"]."\n";
+    echo "Last fail cause: ".$input["lineFailCause"]."\n";
+
+    // check voltage data
+    $max = $options["maxvoltage"];
+    $min = $options["minvoltage"];
+    $range = $max - $min;
+    $crithigh = $min + ($range * $crit);
+    $critlow = $max - ($range * $crit);
+    $warnhigh = $min + ($range * $warn);
+    $warnlow = $min - ($range * $warn);
+
+    // set exit code
+    $voltage = $input["lineVoltage"];
+    if(($voltage >= $crithigh) || ($voltage <= $critlow)) {
+      exitCode("CRITICAL");
+    } else if(($voltage >= $warnhigh) || ($voltage <= $warnlow)) {
+      exitCode("WARNING");
+    } else if(($voltage > $warnlow) && ($voltage < $warnhigh)) {
+      exitCode("OK");
+    } else {
+      exitCode("UNKNOWN");
+    }
   }
 
   function checkOutput() {
+    //set up variables
+    global $options;
+    global $oids;
+    global $outputStatuses;
+    $type = $options["t"];
 
+    // get output data
+    $output["status"] = $outputStatuses[snmp($oids[$type]["output"]["status"])];
+
+    // output info
+    echo $output["status"]["desc"]."\n";
+
+    // set exit code
+    exitCode($output["status"]["exit"]);
   }
 
   function snmp($oid) {
