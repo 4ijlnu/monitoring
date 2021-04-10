@@ -1,7 +1,10 @@
 #!/usr/bin/php
 <?php
   // oids from http://www.oidview.com/mibs/0/Printer-MIB.html
-  // input types from https://tools.ietf.org/html/rfc1759#page-35
+  // input types from https://tools.ietf.org/html/rfc1759#page-36
+  // supply types from https://tools.ietf.org/html/rfc1759#page-60
+  // supply classes from https://tools.ietf.org/html/rfc1759#page-60
+  // supply capacities from https://tools.ietf.org/html/rfc1759#page-61
 
 
   $options = getopt(
@@ -23,6 +26,7 @@
         "index" => "1.3.6.1.2.1.43.11.1.1.2.1.",
         "desc" => "1.3.6.1.2.1.43.11.1.1.6.1.",
         "type" => "1.3.6.1.2.1.43.11.1.1.5.1.",
+        "class" => "1.3.6.1.2.1.43.11.1.1.4.1.",
         "capacity" => "1.3.6.1.2.1.43.11.1.1.8.1.",
         "level" => "1.3.6.1.2.1.43.11.1.1.9.1."
       ),
@@ -50,6 +54,14 @@
     6 => "continuousRoll",
     7 => "continuousFanFold",
     8 => "sheetFeedPull"
+  );
+
+  // "Indicates whether this supply entity represents a supply
+  // container that is consumed or a receptacle that is filled."
+  $supplyclasses = array(
+    1 => "other",
+    3 => "supplyThatIsConsumed",
+    4 => "receptacleThatIsFilled"
   );
 
   $supplytypes = array(
@@ -87,6 +99,17 @@
     32 => "staples",
     33 => "inserts",
     34 => "covers"
+  );
+
+  $supplycapacities = array(
+    "-1" => "other",
+    "-2" => "unknown"
+  );
+
+  $supplylevels = array(
+    "-1" => "other",
+    "-2" => "unknown",
+    "-3" => "ok"
   );
 
   switch($options["m"]) {
@@ -236,15 +259,55 @@
     while(snmp($oids[$type]["supply"]["index"].$i) != "No Such Instance currently exists at this OID") {
       // get supply data
       $supply["desc"] = snmp($oids[$type]["supply"]["desc"].$i);
+      $supply["class"] = snmp($oids[$type]["supply"]["class"].$i);
       $supply["type"] = snmp($oids[$type]["supply"]["type"].$i);
       $supply["capacity"] = snmp($oids[$type]["supply"]["capacity"].$i);
       $supply["level"] = snmp($oids[$type]["supply"]["level"].$i);
 
-      // calculate the percentage of supply left
-      $pctlevel = ($supply["level"]/$supply["capacity"])*100;
+      // intercept negative capacity
+      if($supply["capacity"] < 0) {
+        // -1=other, -2=unknown
+        // -> do nothing - so $okcount wont be full and status will be unknown
+      }
 
-      // output info
-      echo $supply["desc"]." (".$supplytypes[$supply["type"]]."): ".$supply["level"]." of ".$supply["capacity"]." (".$pctlevel."%)\n";
+      // intercept negative level
+      if($supply["level"] < 0) {
+        // -1=other, -2=unknown, -3=ok
+        switch($supply["level"]) {
+          case "-3":
+            echo $supply["desc"]." (".$supplytypes[$supply["type"]]."): OK\n";
+            $okcount++;
+            break;
+          case "-1":
+          case "-2":
+          default:
+            // do nothing - so $okcount wont be full and status will be unknown
+            break;
+        }
+      }
+
+      // if capacity and level both are not negative...
+      if(($supply["capacity"] >= 0) && ($supply["level"] >= 0)) {
+        // calculate the percentage of supply left
+        $pctlevel = ($supply["level"]/$supply["capacity"])*100;
+
+        // output info according to supply class
+        switch($supply["class"]) {
+          case 1:
+            // other
+            echo $supply["desc"]." (".$supplytypes[$supply["type"]]."): ".$pctlevel."%\n";
+          case 3:
+            // 3 = supplyThatIsConsumed
+            echo $supply["desc"]." (".$supplytypes[$supply["type"]]."): ".$pctlevel."% left\n";
+            break;
+          case 4:
+            // 4 = receptacleThatIsFilled
+            // for receptacles the level is the remaining amount
+            // -> so invert it to show the used amount
+            $pctlevel = 100-$pctlevel;
+            echo $supply["desc"]." (".$supplytypes[$supply["type"]]."): ".$pctlevel."% full\n";
+        }
+      }
 
       // set counters
       if($pctlevel <= $crit) {
