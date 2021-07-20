@@ -309,6 +309,16 @@
         }
       }
 
+      // bugfix for #1
+      // set $pctlevel if not already set
+      if(!isset($pctlevel)) {
+        $pctlevel = "";
+      } else {
+        if($pctlevel == null) {
+          $pctlevel = "";
+        }
+      }
+
       // set counters
       if($pctlevel <= $crit) {
         // less than $critical percent of this supply left
