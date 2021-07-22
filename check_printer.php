@@ -286,51 +286,49 @@
         }
       }
 
-      // if capacity and level both are not negative...
-      if(($supply["capacity"] >= 0) && ($supply["level"] >= 0)) {
-        // calculate the percentage of supply left
-        $pctlevel = ($supply["level"]/$supply["capacity"])*100;
-
-        // output info according to supply class
-        switch($supply["class"]) {
-          case 1:
-            // other
-            echo $supply["desc"]." (".$supplytypes[$supply["type"]]."): ".$pctlevel."%\n";
-          case 3:
-            // 3 = supplyThatIsConsumed
-            echo $supply["desc"]." (".$supplytypes[$supply["type"]]."): ".$pctlevel."% left\n";
-            break;
-          case 4:
-            // 4 = receptacleThatIsFilled
-            // for receptacles the level is the remaining amount
-            // -> so invert it to show the used amount
-            $pctlevel = 100-$pctlevel;
-            echo $supply["desc"]." (".$supplytypes[$supply["type"]]."): ".$pctlevel."% full\n";
-        }
-      }
-
-      // bugfix for #1
-      // set $pctlevel if not already set
-      if(!isset($pctlevel)) {
-        $pctlevel = "";
+      // intercept unknown supply
+      if($supply["capacity"] == -2 and $supply["level"] == -2) {
+        echo $supplytypes[$supply["type"]]." with unknown capacity and unknown level\n";
       } else {
-        if($pctlevel == null) {
-          $pctlevel = "";
+        
+        // if capacity and level both are not negative...
+        if(($supply["capacity"] >= 0) && ($supply["level"] >= 0)) {
+          // calculate the percentage of supply left
+          $pctlevel = ($supply["level"]/$supply["capacity"])*100;
+
+          // output info according to supply class
+          switch($supply["class"]) {
+            case 1:
+              // other
+              echo $supply["desc"]." (".$supplytypes[$supply["type"]]."): ".$pctlevel."%\n";
+            case 3:
+              // 3 = supplyThatIsConsumed
+              echo $supply["desc"]." (".$supplytypes[$supply["type"]]."): ".$pctlevel."% left\n";
+              break;
+            case 4:
+              // 4 = receptacleThatIsFilled
+              // for receptacles the level is the remaining amount
+              // -> so invert it to show the used amount
+              $pctlevel = 100-$pctlevel;
+              echo $supply["desc"]." (".$supplytypes[$supply["type"]]."): ".$pctlevel."% full\n";
+          }
+        }
+
+        if(isset($pctlevel)) {
+          // set counters
+          if($pctlevel <= $crit) {
+            // less than $critical percent of this supply left
+            $critcount++;
+          } else if($pctlevel <= $warn) {
+            // more than $critical but less than $warning percent of this supply left
+            $warncount++;
+          } else if(($pctlevel > $warn) && ($pctlevel <= 100)) {
+            // more than $warning percent of this supply left (but not more than 100%)
+            $okcount++;
+          }
         }
       }
-
-      // set counters
-      if($pctlevel <= $crit) {
-        // less than $critical percent of this supply left
-        $critcount++;
-      } else if($pctlevel <= $warn) {
-        // more than $critical but less than $warning percent of this supply left
-        $warncount++;
-      } else if(($pctlevel > $warn) && ($pctlevel <= 100)) {
-        // more than $warning percent of this supply left (but not more than 100%)
-        $okcount++;
-      }
-
+      
       $i++;
     }
 
